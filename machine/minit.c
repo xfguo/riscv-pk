@@ -1,12 +1,16 @@
 #include "mtrap.h"
+#if 0
 #include "atomic.h"
 #include "vm.h"
 #include "fp_emulation.h"
+#endif
 #include <string.h>
 #include <limits.h>
 
+#if 0
 pte_t* root_page_table;
 uintptr_t first_free_paddr;
+#endif
 uintptr_t mem_size;
 uintptr_t num_harts;
 volatile uint64_t* mtime;
@@ -15,6 +19,7 @@ size_t plic_ndevs;
 
 static void mstatus_init()
 {
+#if 0
   // Enable FPU and set VM mode
   uintptr_t ms = 0;
   ms = INSERT_FIELD(ms, MSTATUS_VM, VM_CHOICE);
@@ -28,9 +33,11 @@ static void mstatus_init()
   // Enable user/supervisor use of perf counters
   write_csr(mucounteren, -1);
   write_csr(mscounteren, -1);
+#endif
   write_csr(mie, ~MIP_MTIP); // disable timer; enable other interrupts
 }
 
+#if 0
 // send S-mode interrupts and most exceptions straight to S-mode
 static void delegate_traps()
 {
@@ -49,7 +56,9 @@ static void delegate_traps()
   assert(read_csr(mideleg) == interrupts);
   assert(read_csr(medeleg) == exceptions);
 }
+#endif
 
+#if 0
 static void fp_init()
 {
   assert(read_csr(mstatus) & MSTATUS_FS);
@@ -66,31 +75,37 @@ static void fp_init()
   assert(!(read_csr(misa) & fd_mask));
 #endif
 }
+#endif
 
 hls_t* hls_init(uintptr_t id)
 {
   hls_t* hls = OTHER_HLS(id);
+#if 0
   memset(hls, 0, sizeof(*hls));
+#endif
   return hls;
 }
 
+#if 0
 static uintptr_t sbi_top_paddr()
 {
   extern char _end;
   return ROUNDUP((uintptr_t)&_end, RISCV_PGSIZE);
 }
-
 static void memory_init()
 {
   mem_size = mem_size / MEGAPAGE_SIZE * MEGAPAGE_SIZE;
   first_free_paddr = sbi_top_paddr() + num_harts * RISCV_PGSIZE;
 }
 
+#endif
 static void hart_init()
 {
   mstatus_init();
+#if 0
   fp_init();
   delegate_traps();
+#endif
 }
 
 static void plic_init()
@@ -136,18 +151,23 @@ void init_first_hart()
   parse_config_string();
   plic_init();
   hart_plic_init();
-  //prci_test();
+  prci_test();
+#if 0
   memory_init();
   boot_loader();
+#endif
 }
 
+#if 0
 void init_other_hart()
 {
   hart_init();
   hart_plic_init();
   boot_other_hart();
 }
+#endif
 
+#if 0
 void enter_supervisor_mode(void (*fn)(uintptr_t), uintptr_t stack)
 {
   uintptr_t mstatus = read_csr(mstatus);
@@ -160,3 +180,4 @@ void enter_supervisor_mode(void (*fn)(uintptr_t), uintptr_t stack)
   asm volatile ("mv a0, %0; mv sp, %0; mret" : : "r" (stack));
   __builtin_unreachable();
 }
+#endif

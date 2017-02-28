@@ -3,15 +3,21 @@
 
 #include "encoding.h"
 
+#if 0
 #ifdef __riscv_atomic
 # define MAX_HARTS 8 // arbitrary
+#else
+# define MAX_HARTS 1
+#endif
 #else
 # define MAX_HARTS 1
 #endif
 
 #ifndef __ASSEMBLER__
 
+#if 0
 #include "sbi.h"
+#endif
 #include <stdint.h>
 #include <stddef.h>
 
@@ -29,7 +35,9 @@ static inline int xlen()
   return read_const_csr(misa) < 0 ? 64 : 32;
 }
 
+#if 0
 extern uintptr_t first_free_paddr;
+#endif
 extern uintptr_t mem_size;
 extern uintptr_t num_harts;
 extern volatile uint64_t* mtime;
@@ -49,10 +57,12 @@ typedef struct {
   volatile uintptr_t* plic_s_ie;
 } hls_t;
 
+#if 0
 #define IPI_SOFT      0x1
 #define IPI_FENCE_I   0x2
 #define IPI_SFENCE_VM 0x4
 
+#endif
 #define MACHINE_STACK_TOP() ({ \
   register uintptr_t sp asm ("sp"); \
   (void*)((sp + RISCV_PGSIZE) & -RISCV_PGSIZE); })
@@ -64,11 +74,19 @@ typedef struct {
 hls_t* hls_init(uintptr_t hart_id);
 void parse_config_string();
 void poweroff(void) __attribute((noreturn));
+#if 0
 void printm(const char* s, ...);
 void putstring(const char* s);
-#define assert(x) ({ if (!(x)) die("assertion failed: %s", #x); })
-#define die(str, ...) ({ printm("%s:%d: " str "\n", __FILE__, __LINE__, ##__VA_ARGS__); poweroff(); })
+#endif
 
+#define assert(x) ({ if (!(x)) die("assertion failed: %s", #x); })
+#if 0
+#define die(str, ...) ({ printm("%s:%d: " str "\n", __FILE__, __LINE__, ##__VA_ARGS__); poweroff(); })
+#else
+#define die(...) {while(1);}
+#endif
+
+#if 0
 void enter_supervisor_mode(void (*fn)(uintptr_t), uintptr_t stack)
   __attribute__((noreturn));
 void boot_loader();
@@ -78,6 +96,7 @@ static inline void wfi()
 {
   asm volatile ("wfi" ::: "memory");
 }
+#endif
 
 #endif // !__ASSEMBLER__
 

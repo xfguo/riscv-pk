@@ -1,14 +1,18 @@
 #include "mtrap.h"
 #include "mcall.h"
+#if 0
 #include "htif.h"
 #include "atomic.h"
+#endif
 #include "bits.h"
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 
+#if 0
 volatile uint64_t tohost __attribute__((aligned(64))) __attribute__((section("htif")));
 volatile uint64_t fromhost __attribute__((aligned(64))) __attribute__((section("htif")));
+#endif
 
 void __attribute__((noreturn)) bad_trap()
 {
@@ -20,6 +24,7 @@ static uintptr_t mcall_hart_id()
   return read_const_csr(mhartid);
 }
 
+#if 0
 static void request_htif_keyboard_interrupt()
 {
   assert(tohost == 0);
@@ -56,6 +61,7 @@ static void do_tohost_fromhost(uintptr_t dev, uintptr_t cmd, uintptr_t data)
     }
   }
 }
+#endif
 
 uintptr_t timer_interrupt()
 {
@@ -63,12 +69,17 @@ uintptr_t timer_interrupt()
   clear_csr(mie, MIP_MTIP);
   set_csr(mip, MIP_STIP);
 
+#if 0
   // and poll the HTIF console
   htif_interrupt();
+#else
+  /* TODO: do something here */
+#endif
 
   return 0;
 }
 
+#if 0
 static uintptr_t mcall_console_putchar(uint8_t ch)
 {
   do_tohost_fromhost(1, 1, ch);
@@ -80,13 +91,19 @@ static uintptr_t mcall_htif_syscall(uintptr_t magic_mem)
   do_tohost_fromhost(0, 0, magic_mem);
   return 0;
 }
+#endif
 
 void poweroff()
 {
+#if 0
   while (1)
     tohost = 1;
+#else
+  while (1);
+#endif
 }
 
+#if 0
 void putstring(const char* s)
 {
   while (*s)
@@ -146,6 +163,7 @@ static uintptr_t mcall_clear_ipi()
   reset_ssip();
   return ipi;
 }
+#endif
 
 static uintptr_t mcall_shutdown()
 {
@@ -154,7 +172,12 @@ static uintptr_t mcall_shutdown()
 
 static uintptr_t mcall_set_timer(uint64_t when)
 {
+#if 0
   *HLS()->timecmp = when;
+#else
+  /* TODO */
+#endif
+
   clear_csr(mip, MIP_STIP);
   set_csr(mie, MIP_MTIP);
   return 0;
@@ -162,6 +185,7 @@ static uintptr_t mcall_set_timer(uint64_t when)
 
 void software_interrupt()
 {
+#if 0
   *HLS()->ipi = 0;
   mb();
   int ipi_pending = atomic_swap(&HLS()->mipi_pending, 0);
@@ -176,8 +200,12 @@ void software_interrupt()
 
   if (ipi_pending & IPI_SFENCE_VM)
     asm volatile ("sfence.vm");
+#else
+  /* TODO */
+#endif
 }
 
+#if 0
 static void send_ipi_many(uintptr_t* pmask, int event)
 {
   _Static_assert(MAX_HARTS <= 8 * sizeof(*pmask), "# harts > uintptr_t bits");
@@ -211,6 +239,7 @@ static uintptr_t mcall_remote_fence_i(uintptr_t* hart_mask)
   send_ipi_many(hart_mask, IPI_FENCE_I);
   return 0;
 }
+#endif
 
 void mcall_trap(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc)
 {
@@ -220,6 +249,7 @@ void mcall_trap(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc)
     case MCALL_HART_ID:
       retval = mcall_hart_id();
       break;
+#if 0
     case MCALL_CONSOLE_PUTCHAR:
       retval = mcall_console_putchar(arg0);
       break;
@@ -235,6 +265,7 @@ void mcall_trap(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc)
     case MCALL_CLEAR_IPI:
       retval = mcall_clear_ipi();
       break;
+#endif
     case MCALL_SHUTDOWN:
       retval = mcall_shutdown();
       break;
@@ -245,12 +276,14 @@ void mcall_trap(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc)
       retval = mcall_set_timer(arg0);
 #endif
       break;
+#if 0
     case MCALL_REMOTE_SFENCE_VM:
       retval = mcall_remote_sfence_vm((uintptr_t*)arg0, arg1);
       break;
     case MCALL_REMOTE_FENCE_I:
       retval = mcall_remote_fence_i((uintptr_t*)arg0);
       break;
+#endif
     default:
       retval = -ENOSYS;
       break;
@@ -259,6 +292,7 @@ void mcall_trap(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc)
   write_csr(mepc, mepc + 4);
 }
 
+#if 0
 void redirect_trap(uintptr_t epc, uintptr_t mstatus)
 {
   write_csr(sepc, epc);
@@ -287,15 +321,18 @@ static void machine_page_fault(uintptr_t* regs, uintptr_t mepc)
   bad_trap();
 }
 
+#endif
 void trap_from_machine_mode(uintptr_t* regs, uintptr_t dummy, uintptr_t mepc)
 {
   uintptr_t mcause = read_csr(mcause);
 
   switch (mcause)
   {
+#if 0
     case CAUSE_FAULT_LOAD:
     case CAUSE_FAULT_STORE:
       return machine_page_fault(regs, mepc);
+#endif
     default:
       bad_trap();
   }

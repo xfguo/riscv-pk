@@ -1,8 +1,12 @@
 #include "configstring.h"
 #include "encoding.h"
 #include "mtrap.h"
+#if 0
 #include "atomic.h"
+#endif
 #include <stdio.h>
+
+#define snprintf(...)
 
 static void query_mem(const char* config_string)
 {
@@ -77,7 +81,9 @@ static void query_harts(const char* config_string)
       assert(res.start);
       hls->timecmp = (void*)(uintptr_t)get_uint(res);
 
+#if 0
       mb();
+#endif
 
       // wake up the hart
       *hls->ipi = 1;

@@ -8,14 +8,14 @@
 trap_table:
   .word bad_trap
   .word bad_trap
-  .word illegal_insn_trap
+  .word bad_trap /* TODO: illegal_insn_trap */
   .word bad_trap
-  .word misaligned_load_trap
+  .word bad_trap /* TODO: support misaligned_load_trap */
   .word bad_trap
-  .word misaligned_store_trap
+  .word bad_trap /* TODO: support misaligned_store_trap */
   .word bad_trap
   .word bad_trap
-  .word mcall_trap
+  .word bad_trap /* TODO: support mcall_trap */
   .word bad_trap
   .word bad_trap
 #define SOFTWARE_INTERRUPT_VECTOR 12
@@ -23,7 +23,7 @@ trap_table:
 #define TIMER_INTERRUPT_VECTOR 13
   .word timer_interrupt
 #define TRAP_FROM_MACHINE_MODE_VECTOR 14
-  .word __trap_from_machine_mode
+  .word bad_trap /* TODO: support __trap_from_machine_mode */
 
   .option norvc
   .section .text.init,"ax",@progbits
@@ -179,6 +179,7 @@ __redirect_trap:
 __trap_from_machine_mode:
   jal trap_from_machine_mode
   j restore_regs
+
 
 do_reset:
   li x1, 0
