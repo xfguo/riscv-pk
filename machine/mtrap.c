@@ -1,7 +1,7 @@
 #include "mtrap.h"
 #include "mcall.h"
-#if 0
 #include "htif.h"
+#if 0
 #include "atomic.h"
 #endif
 #include "bits.h"
@@ -9,10 +9,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#if 0
 volatile uint64_t tohost __attribute__((aligned(64))) __attribute__((section("htif")));
 volatile uint64_t fromhost __attribute__((aligned(64))) __attribute__((section("htif")));
-#endif
 
 void __attribute__((noreturn)) bad_trap()
 {
@@ -24,7 +22,6 @@ static uintptr_t mcall_hart_id()
   return read_const_csr(mhartid);
 }
 
-#if 0
 static void request_htif_keyboard_interrupt()
 {
   assert(tohost == 0);
@@ -61,7 +58,6 @@ static void do_tohost_fromhost(uintptr_t dev, uintptr_t cmd, uintptr_t data)
     }
   }
 }
-#endif
 
 uintptr_t timer_interrupt()
 {
@@ -79,7 +75,6 @@ uintptr_t timer_interrupt()
   return 0;
 }
 
-#if 0
 static uintptr_t mcall_console_putchar(uint8_t ch)
 {
   do_tohost_fromhost(1, 1, ch);
@@ -91,19 +86,13 @@ static uintptr_t mcall_htif_syscall(uintptr_t magic_mem)
   do_tohost_fromhost(0, 0, magic_mem);
   return 0;
 }
-#endif
 
 void poweroff()
 {
-#if 0
   while (1)
     tohost = 1;
-#else
-  while (1);
-#endif
 }
 
-#if 0
 void putstring(const char* s)
 {
   while (*s)
@@ -116,12 +105,13 @@ void printm(const char* s, ...)
   va_list vl;
 
   va_start(vl, s);
-  vsnprintf(buf, sizeof buf, s, vl);
+//  vsnprintf(buf, sizeof buf, s, vl);
   va_end(vl);
 
   putstring(buf);
 }
 
+#if 0
 static void send_ipi(uintptr_t recipient, int event)
 {
   if ((atomic_or(&OTHER_HLS(recipient)->mipi_pending, event) & event) == 0) {
@@ -147,7 +137,9 @@ static void reset_ssip()
   if (HLS()->sipi_pending || HLS()->console_ibuf > 0)
     set_csr(mip, MIP_SSIP);
 }
+#endif
 
+#if 0
 static uintptr_t mcall_console_getchar()
 {
   int ch = atomic_swap(&HLS()->console_ibuf, -1);
@@ -172,11 +164,7 @@ static uintptr_t mcall_shutdown()
 
 static uintptr_t mcall_set_timer(uint64_t when)
 {
-#if 0
   *HLS()->timecmp = when;
-#else
-  /* TODO */
-#endif
 
   clear_csr(mip, MIP_STIP);
   set_csr(mie, MIP_MTIP);
@@ -249,16 +237,18 @@ void mcall_trap(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc)
     case MCALL_HART_ID:
       retval = mcall_hart_id();
       break;
-#if 0
     case MCALL_CONSOLE_PUTCHAR:
       retval = mcall_console_putchar(arg0);
       break;
+#if 0
     case MCALL_CONSOLE_GETCHAR:
       retval = mcall_console_getchar();
       break;
+#endif
     case MCALL_HTIF_SYSCALL:
       retval = mcall_htif_syscall(arg0);
       break;
+#if 0
     case MCALL_SEND_IPI:
       retval = mcall_send_ipi(arg0);
       break;

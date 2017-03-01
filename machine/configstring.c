@@ -4,9 +4,10 @@
 #if 0
 #include "atomic.h"
 #endif
-#include <stdio.h>
 
-#define snprintf(...)
+#include "tinyprintf.h"
+/* FIXME: add size parameter */
+#define snprintf(buf, size, fmt, ...) tfp_sprintf(buf, fmt, __VA_ARGS__)
 
 static void query_mem(const char* config_string)
 {

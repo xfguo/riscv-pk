@@ -144,8 +144,34 @@ static void hart_plic_init()
   *HLS()->plic_s_thresh = 0;
 }
 
+/* TODO: from FreeRTOS */
+#if 1
+/* Fires a syscall */
+long syscall(long num, long arg0, long arg1, long arg2)
+{
+    register long a7 asm("a7") = num;
+    register long a0 asm("a0") = arg0;
+    register long a1 asm("a1") = arg1;
+    register long a2 asm("a2") = arg2;
+    asm volatile ("scall":"+r"(a0) : "r"(a1), "r"(a2), "r"(a7));
+    return a0;
+}
+
+int putc(int ch)
+{
+    syscall(1, (long)ch, 9, 0);
+    return 0;
+}
+#endif
+
 void init_first_hart()
 {
+  putc('H');
+  putc('e');
+  putc('l');
+  putc('l');
+  putc('o');
+  putc('\n');
   hart_init();
   hls_init(0); // this might get called again from parse_config_string
   parse_config_string();

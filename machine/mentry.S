@@ -15,7 +15,7 @@ trap_table:
   .word bad_trap /* TODO: support misaligned_store_trap */
   .word bad_trap
   .word bad_trap
-  .word bad_trap /* TODO: support mcall_trap */
+  .word mcall_trap
   .word bad_trap
   .word bad_trap
 #define SOFTWARE_INTERRUPT_VECTOR 12
@@ -36,22 +36,24 @@ nmi_vector:
   j bad_trap
 
 trap_vector:
-  csrrw sp, mscratch, sp
-  beqz sp, .Ltrap_from_machine_mode
+  # TODO: setup the mscratch env
+  # aaa:csrrw sp, mscratch, sp
+  # aaa:beqz sp, .Ltrap_from_machine_mode
 
   STORE a0, 10*REGBYTES(sp)
   STORE a1, 11*REGBYTES(sp)
 
-  csrr a1, mcause
-  bgez a1, .Lhandle_trap_in_machine_mode
+#  csrr a1, mcause
+#jjj:
+#  bgez a1, .Lhandle_trap_in_machine_mode
 
-  # This is an interrupt.  Discard the mcause MSB and decode the rest.
-  sll a1, a1, 1
+#  # This is an interrupt.  Discard the mcause MSB and decode the rest.
+#  sll a1, a1, 1
 
-  # Is it a machine timer interrupt?
-  li a0, IRQ_M_TIMER * 2
-  bne a0, a1, 1f
-  li a1, TIMER_INTERRUPT_VECTOR
+#  # Is it a machine timer interrupt?
+#  li a0, IRQ_M_TIMER * 2
+#  bne a0, a1, 1f
+#  li a1, TIMER_INTERRUPT_VECTOR
   j .Lhandle_trap_in_machine_mode
 
 .Lmret:
@@ -68,6 +70,7 @@ trap_vector:
   li a1, SOFTWARE_INTERRUPT_VECTOR
   j .Lhandle_trap_in_machine_mode
 
+xxx:
 .Lhandle_trap_in_machine_mode:
   # Preserve the registers.  Compute the address of the trap handler.
   STORE ra, 1*REGBYTES(sp)
