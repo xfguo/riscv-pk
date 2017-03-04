@@ -17,6 +17,12 @@ sim:
 	echo start and connect remote :3333
 	spike -H --gdb-port=3333 m.elf
 
+single:
+	$(CC) $(CFLAGS) -o entry.o -c entry.S
+	$(CC) $(CFLAGS) -o init.o -c init.c
+	$(LD) $(LDFLAGS) $(LIBS) entry.o init.o -o s.elf
+	$(OBJDUMP) -S s.elf > s.dis
+
 gdb:
 	riscv64-unknown-elf-gdb -x gdb.cmd
 

@@ -2,6 +2,8 @@ OUTPUT_ARCH( "riscv" )
 
 ENTRY( reset_vector )
 
+_STACK_SIZE = 0x1000;
+
 SECTIONS
 {
 
@@ -39,16 +41,6 @@ SECTIONS
   /* End of code and read-only segment */
   PROVIDE( etext = . );
   _etext = .;
-
-  /*--------------------------------------------------------------------*/
-  /* HTIF, isolated onto separate page                                  */
-  /*--------------------------------------------------------------------*/
-  . = ALIGN(0x1000);
-  htif :
-  {
-    *(htif)
-  }
-  . = ALIGN(0x1000);
 
   /*--------------------------------------------------------------------*/
   /* Initialized data segment                                           */
@@ -94,6 +86,14 @@ SECTIONS
     *(.sbss*)
     *(.gnu.linkonce.b.*)
     *(COMMON)
+  }
+
+  .stack : {
+     _stack_end = .;
+     . += _STACK_SIZE;
+     . = ALIGN(4);
+     _stack = .;
+     __stack = _stack;
   }
 
   _end = .;
