@@ -1,5 +1,6 @@
 
 #include <stdint.h>
+#include "encoding.h"
 #include "init.h"
 
 volatile uint64_t tohost __attribute__((aligned(64)));
@@ -23,11 +24,27 @@ static long htif_tohost(long which, long arg0, long arg1, long arg2)
 	return magic_mem[0];
 }
 
+volatile uint64_t* mtime;
+volatile uint64_t* mtimecmp;
+
+void timer_interrupt(void) {
+	const char hello[] = "Timer\n";
+	
+	clear_csr(mip, MIP_MTIP);
+
+	htif_tohost(64, 1, (long) hello, sizeof(hello));
+	
+	*mtimecmp = *mtime + 138727004;
+}
+
 void init(void) {
 	const char hello[] = "Hello World\n";
 
+	mtime = (uint64_t *)0x40000000;
+	mtimecmp = (uint64_t *)0x40000008;
+
 	htif_tohost(64, 1, (long) hello, sizeof(hello));
-	while(1) {
-		
-	}
+
+	write_csr(mie, MIP_MTIP);
+	*mtimecmp = *mtime + 138727004;
 }

@@ -9,6 +9,8 @@ reset_vector:
   j do_reset
 
 trap_vector:
+  j timer_interrupt
+  mret
 
 do_reset:
   li x1, 0
@@ -54,4 +56,5 @@ do_reset:
 
   # jump to init
   j init
+  wfi
 
